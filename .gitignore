@@ -17,6 +17,9 @@ ENV/
 models/
 outputs/
 
+# Data files
+data/
+
 # Local environment and secrets
 .env
 .env.*
