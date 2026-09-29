@@ -65,6 +65,6 @@ def get_summary(data):
 
 
 if __name__ == "__main__":
-    filepath = "churn data/customer_data2.csv"
+    filepath = "data/customer_data.csv"
     customer_data = load_data(filepath)
     print(get_summary(customer_data))

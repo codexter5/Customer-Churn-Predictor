@@ -67,7 +67,7 @@ def display_prediction(prediction, probability):
 
 
 if __name__ == "__main__":
-    model = joblib.load("random_forest.joblib")
+    model = joblib.load("models/random_forest.joblib")
     columns = list(model.feature_names_in_)
     customer_data = get_customer_input(columns)
     prediction, probability = predict_churn(model, customer_data)

@@ -11,15 +11,15 @@ This project predicts whether a customer is likely to churn. It is a small Pytho
 - Random Forest feature-importance visualization
 - A menu-driven entry point that connects the complete workflow
 
-The current application uses `churn data/customer_data1.csv` as its default dataset and predicts the `Churn` column.
+The current application uses `data/customer_data.csv` as its default dataset and predicts the `Churn` column.
 
 ## 2. Current Project Structure
 
 ```text
 Customer Churn Predictor/
 |
-|-- churn data/
-|   |-- customer_data1.csv       # Default dataset used by main.py and model_trainer.py
+|-- data/
+|   |-- customer_data.csv        # Default dataset used by main.py and model_trainer.py
 |   |-- customer_data2.csv       # Alternate dataset for summaries/manual experiments
 |
 |-- data_handler.py              # CSV loading, cleaning, and summaries
@@ -27,12 +27,12 @@ Customer Churn Predictor/
 |-- predictor.py                 # Interactive single-customer prediction
 |-- visualizer.py                # Random Forest feature-importance chart
 |-- main.py                      # Complete interactive menu application
-|-- requirement.txt              # Pinned Python dependencies
-|-- random_forest.joblib         # Saved Random Forest model
-|-- logistic_regression.joblib   # Saved Logistic Regression model
+|-- requirements.txt             # Pinned Python dependencies
+|-- models/
+|   |-- random_forest.joblib     # Saved Random Forest model
+|   |-- logistic_regression.joblib # Saved Logistic Regression model
 |-- outputs/
 |   |-- feature_importance.png   # Generated chart
-|-- models/                      # Currently unused; main.py saves models in the project root
 |-- venv/                        # Existing Python virtual environment
 |-- README.md                    # Currently empty
 |-- PROJECT_GUIDE.md             # This document
@@ -57,13 +57,13 @@ The repository currently contains a virtual environment. Activate it:
 Install the pinned dependencies:
 
 ```powershell
-python -m pip install -r .\requirement.txt
+python -m pip install -r .\requirements.txt
 ```
 
 If PowerShell does not allow activation, run commands through the environment directly:
 
 ```powershell
-.\venv\Scripts\python.exe -m pip install -r .\requirement.txt
+.\venv\Scripts\python.exe -m pip install -r .\requirements.txt
 ```
 
 ## 4. How to Run the Application
@@ -112,7 +112,7 @@ The standalone data handler currently summarizes `customer_data2.csv`. Change th
 .\venv\Scripts\python.exe .\model_trainer.py
 ```
 
-This loads `customer_data1.csv`, cleans it, trains both models, prints evaluation metrics, and writes:
+This loads `customer_data.csv`, cleans it, trains both models, prints evaluation metrics, and writes:
 
 - `logistic_regression.joblib`
 - `random_forest.joblib`
@@ -207,7 +207,7 @@ random_forest.joblib
 logistic_regression.joblib
 ```
 
-They are saved by `model_trainer.py` in the project root. `main.py` uses the same paths.
+They are saved by `model_trainer.py` in the `models/` directory. `main.py` uses the same paths.
 
 The saved Random Forest stores the feature names in `model.feature_names_in_`. `predictor.py` uses those names to determine which fields to request. If the training features change, retrain the models before running the predictor.
 
@@ -240,9 +240,9 @@ Owns the interactive workflow and in-memory state. It imports the other modules 
 The active paths and target are defined near the top of `main.py`:
 
 ```python
-DATA_PATH = "churn data/customer_data1.csv"
-RF_MODEL_PATH = "random_forest.joblib"
-LR_MODEL_PATH = "logistic_regression.joblib"
+DATA_PATH = "data/customer_data.csv"
+RF_MODEL_PATH = "models/random_forest.joblib"
+LR_MODEL_PATH = "models/logistic_regression.joblib"
 CHART_PATH = "outputs/feature_importance.png"
 TARGET_COLUMN = "Churn"
 ```
@@ -257,7 +257,7 @@ If the dataset, target column, model location, or output location changes, updat
 
 ## 12. Dependencies
 
-The dependency file is named `requirement.txt` rather than the more common `requirements.txt`. It contains pinned versions for pandas, NumPy, scikit-learn, joblib, Matplotlib, SciPy, and their supporting packages.
+The dependency file is named `requirements.txt` and contains pinned versions for pandas, NumPy, scikit-learn, joblib, Matplotlib, SciPy, and their supporting packages.
 
 The most important runtime packages are:
 
@@ -281,7 +281,7 @@ Use the project interpreter instead of the system interpreter:
 If the package is not installed:
 
 ```powershell
-.\venv\Scripts\python.exe -m pip install -r .\requirement.txt
+.\venv\Scripts\python.exe -m pip install -r .\requirements.txt
 ```
 
 ### Model file not found
@@ -312,8 +312,6 @@ Check `DATA_PATH` and `TARGET_COLUMN` in `main.py`, and check the standalone fil
 4. Make `main.py` load existing models when available instead of requiring retraining every launch.
 5. Add automated tests for loading, cleaning, splitting, prediction, and evaluation.
 6. Add a real validation strategy and investigate the near-perfect Random Forest result.
-7. Rename `requirement.txt` to `requirements.txt` if external tooling expects the conventional name.
-8. Decide whether models belong in the project root or in `models/`, then update every module consistently.
 9. Add `.gitignore` entries for `venv/`, `__pycache__/`, generated model files, and generated charts.
 10. Add command-line arguments for selecting the dataset, model, and output paths.
 

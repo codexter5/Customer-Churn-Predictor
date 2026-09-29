@@ -12,9 +12,9 @@ import predictor
 import visualizer
 
 # File paths used throughout the program.
-DATA_PATH = "churn data/customer_data1.csv"
-RF_MODEL_PATH = "random_forest.joblib"
-LR_MODEL_PATH = "logistic_regression.joblib"
+DATA_PATH = "data/customer_data.csv"
+RF_MODEL_PATH = "models/random_forest.joblib"
+LR_MODEL_PATH = "models/logistic_regression.joblib"
 CHART_PATH = "outputs/feature_importance.png"
 TARGET_COLUMN = "Churn"
 
