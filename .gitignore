@@ -18,7 +18,7 @@ models/
 outputs/
 
 # Local customer datasets
-churn data/
+# data/
 
 # Local environment files and secrets
 .env

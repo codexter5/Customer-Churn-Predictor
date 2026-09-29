@@ -55,6 +55,6 @@ def plot_feature_importance(model, feature_names, save_path="outputs/feature_imp
 
 
 if __name__ == "__main__":
-    model = joblib.load("random_forest.joblib")
+    model = joblib.load("models/random_forest.joblib")
     feature_names = list(model.feature_names_in_)
     plot_feature_importance(model, feature_names)

@@ -91,7 +91,7 @@ def load_model(filepath):
 if __name__ == "__main__":
     from data_handler import clean_data, load_data
 
-    data = clean_data(load_data("churn data/customer_data1.csv"))
+    data = clean_data(load_data("data/customer_data.csv"))
     X_train, X_test, y_train, y_test = split_data(data)
 
     models = {
@@ -104,4 +104,4 @@ if __name__ == "__main__":
         print(f"{name}: accuracy={results['accuracy']:.3f}, "
               f"precision={results['precision']:.3f}, "
               f"recall={results['recall']:.3f}")
-        save_model(model, f"{name}.joblib")
+        save_model(model, f"models/{name}.joblib")
