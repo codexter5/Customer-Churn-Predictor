@@ -6,6 +6,7 @@ so it's ready to be used by machine learning models.
 
 import pandas as pd
 print("pandas version:", pd.__version__)  # For debugging, to check which pandas version is running
+print("numpy version:", pd.np.__version__)  # For debugging, to check which numpy version is running
 
 def load_data(filepath):
     """
