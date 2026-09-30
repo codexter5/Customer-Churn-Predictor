@@ -13,6 +13,7 @@ import visualizer
 
 # File paths used throughout the program.
 DATA_PATH = "data/customer_data.csv"
+DATA_PATH_2 = "data/customer_data2.csv"
 RF_MODEL_PATH = "models/random_forest.joblib"
 LR_MODEL_PATH = "models/logistic_regression.joblib"
 CHART_PATH = "outputs/feature_importance.png"
@@ -39,7 +40,7 @@ def view_data_summary():
     """Menu option 1: Load the CSV and show a quick summary."""
     global cleaned_data
 
-    raw_data = data_handler.load_data(DATA_PATH)
+    raw_data = data_handler.load_and_combine(DATA_PATH, DATA_PATH_2)
     cleaned_data = data_handler.clean_data(raw_data)
 
     print("\n--- Data Summary ---")

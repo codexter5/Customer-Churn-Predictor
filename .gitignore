@@ -12,20 +12,20 @@ venv/
 env/
 ENV/
 
-# Generated machine-learning artifacts
+# Machine-learning artifacts
 *.joblib
 models/
 outputs/
 
-# Local customer datasets
-# data/
+# Data files
+data/
 
-# Local environment files and secrets
+# Local environment and secrets
 .env
 .env.*
 !.env.example
 
-# Editor and operating-system files
+# Editors and operating-system files
 .vscode/
 .idea/
 .DS_Store
@@ -35,5 +35,7 @@ Thumbs.db
 *.log
 *.tmp
 
-# Gitignore file
-.gitignore
+# ignore files generated
+generate_project_manual.py
+PROJECT_DEVELOPER_MANUAL.docx
+~$OJECT_DEVELOPER_MANUAL.docx
