@@ -28,6 +28,13 @@ def clean_data(data):
     columns_to_drop = ["CustomerID", "CustomerId", "Surname", "RowNumber"]
     data = data.drop(columns=columns_to_drop, errors="ignore")
 
+    # Drop any row that is missing the target column (Churn).
+    # We must do this BEFORE filling missing values below, otherwise a
+    # blank Churn cell would get replaced with the column's average
+    # (e.g. 0.57), which is not a valid churn label - churn must be 0 or 1.
+    if "Churn" in data.columns:
+        data = data.dropna(subset=["Churn"])
+
     # Convert text columns into numeric codes.
     # Machine learning models only understand numbers, not words.
     text_columns = data.select_dtypes(include="object").columns
