@@ -5,7 +5,7 @@ so it's ready to be used by machine learning models.
 """
 
 import pandas as pd
- hello
+print("pandas version:", pd.__version__)  # For debugging, to check which pandas version is running
 
 def load_data(filepath):
     """
