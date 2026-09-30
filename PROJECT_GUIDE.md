@@ -11,7 +11,7 @@ This project predicts whether a customer is likely to churn. It is a small Pytho
 - Random Forest feature-importance visualization
 - A menu-driven entry point that connects the complete workflow
 
-The current application uses `data/customer_data.csv` as its default dataset and predicts the `Churn` column.
+The interactive application combines `data/customer_data.csv` and `data/customer_data2.csv` before cleaning and training. The standalone scripts use `data/customer_data.csv` unless their `__main__` block is changed. All workflows predict the `Churn` column.
 
 ## 2. Current Project Structure
 
@@ -34,8 +34,11 @@ Customer Churn Predictor/
 |-- outputs/
 |   |-- feature_importance.png   # Generated chart
 |-- venv/                        # Existing Python virtual environment
-|-- README.md                    # Currently empty
+|-- README.md                    # Short setup and usage guide
 |-- PROJECT_GUIDE.md             # This document
+|-- PROJECT_DEVELOPER_MANUAL.docx # Comprehensive Word manual
+|-- generate_project_manual.py    # Regenerates the Word manual
+|-- RUN_EXAMPLE.md                # Copyable example run walkthrough
 ```
 
 Generated files such as `.joblib` models, `outputs/`, `models/`, `__pycache__/`, and `venv/` should generally not be committed to source control unless the project requirements explicitly call for them.
@@ -87,14 +90,14 @@ The menu options are:
 
 Recommended workflow:
 
-1. Select `1` to load and clean the dataset.
+1. Select `1` to load, combine, and clean both datasets.
 2. Select `2` to train both models and save them.
 3. Select `3` to evaluate both models.
 4. Select `4` to enter a new customer's feature values and predict churn.
 5. Select `5` to save and display the feature-importance chart.
 6. Select `6` to exit.
 
-Options `2` through `5` depend on the in-memory models created during the current run. Start with option `1` after launching the program.
+Options `2` through `5` depend on the data and in-memory models created during the current run. Start with option `1` after launching the program. The application does not automatically load existing model files at startup.
 
 ## 5. Running Individual Modules
 
@@ -104,7 +107,7 @@ Options `2` through `5` depend on the in-memory models created during the curren
 .\venv\Scripts\python.exe .\data_handler.py
 ```
 
-The standalone data handler currently summarizes `customer_data2.csv`. Change the filepath in its `__main__` block if another file should be summarized.
+The standalone data handler currently summarizes `customer_data.csv` without combining the second dataset. Change the filepath in its `__main__` block if another file should be summarized.
 
 ### Model training
 
@@ -112,7 +115,7 @@ The standalone data handler currently summarizes `customer_data2.csv`. Change th
 .\venv\Scripts\python.exe .\model_trainer.py
 ```
 
-This loads `customer_data.csv`, cleans it, trains both models, prints evaluation metrics, and writes:
+This loads and cleans `customer_data.csv`, trains both models, prints evaluation metrics, and writes:
 
 - `logistic_regression.joblib`
 - `random_forest.joblib`
@@ -168,7 +171,7 @@ After cleaning, the model has 10 input features. `CustomerID` is removed and `Ch
 
 1. Drops `CustomerID`, `CustomerId`, `Surname`, and `RowNumber` when present.
 2. Converts every remaining object/text column to pandas categorical integer codes.
-3. Fills missing numeric values with each column's mean.
+3. Fills remaining missing numeric values with each column's mean.
 
 Important implications:
 
@@ -176,7 +179,7 @@ Important implications:
 - The categorical encoding is created directly from the DataFrame. If category labels or category ordering change, the numeric meaning can change.
 - For production-quality predictions, replace the manual category conversion with a persisted preprocessing pipeline, such as `sklearn.compose.ColumnTransformer` and `OneHotEncoder`.
 - The target is converted to integers in `model_trainer.split_data()` so classifiers receive discrete labels.
-- Missing target values can make the summary display a fractional churn count because `clean_data()` fills every numeric column, including `Churn`, with a mean. A future cleanup should handle the target separately and avoid imputing missing labels.
+- Rows with missing `Churn` values are removed before imputation. Remaining numeric columns are mean-imputed, including any missing feature values.
 
 ## 8. Model Training and Evaluation
 
@@ -209,7 +212,7 @@ logistic_regression.joblib
 
 They are saved by `model_trainer.py` in the `models/` directory. `main.py` uses the same paths.
 
-The saved Random Forest stores the feature names in `model.feature_names_in_`. `predictor.py` uses those names to determine which fields to request. If the training features change, retrain the models before running the predictor.
+The saved Random Forest stores the feature names in `model.feature_names_in_`. `predictor.py` uses those names to determine which fields to request when run directly. In the menu application, the feature names come from the current training split. If the training features or encoding change, retrain the models before running the predictor.
 
 Do not load a model trained with a different feature order or preprocessing scheme. A model file and its preprocessing assumptions must be updated together.
 
@@ -241,23 +244,24 @@ The active paths and target are defined near the top of `main.py`:
 
 ```python
 DATA_PATH = "data/customer_data.csv"
+DATA_PATH_2 = "data/customer_data2.csv"
 RF_MODEL_PATH = "models/random_forest.joblib"
 LR_MODEL_PATH = "models/logistic_regression.joblib"
 CHART_PATH = "outputs/feature_importance.png"
 TARGET_COLUMN = "Churn"
 ```
 
-If the dataset, target column, model location, or output location changes, update all related standalone entry points as well:
+If either dataset, the target column, model location, or output location changes, update all related standalone entry points as well:
 
 - `main.py`
 - `model_trainer.py`
 - `predictor.py`
 - `visualizer.py`
-- `data_handler.py` if its summary input should change
+- `data_handler.py` if its summary input or combination behavior should change
 
 ## 12. Dependencies
 
-The dependency file is named `requirements.txt` and contains pinned versions for pandas, NumPy, scikit-learn, joblib, Matplotlib, SciPy, and their supporting packages.
+The dependency file is named `requirements.txt` and contains pinned versions for pandas, NumPy, scikit-learn, joblib, Matplotlib, SciPy, and their supporting packages. Keep the project virtual environment aligned with this file.
 
 The most important runtime packages are:
 
@@ -306,16 +310,24 @@ Check `DATA_PATH` and `TARGET_COLUMN` in `main.py`, and check the standalone fil
 
 ## 14. Recommended Future Improvements
 
-1. Replace manual categorical codes with a persisted preprocessing pipeline.
-2. Handle the target column separately so missing labels are not mean-imputed.
-3. Move all configuration into one file or command-line arguments.
-4. Make `main.py` load existing models when available instead of requiring retraining every launch.
-5. Add automated tests for loading, cleaning, splitting, prediction, and evaluation.
-6. Add a real validation strategy and investigate the near-perfect Random Forest result.
-9. Add `.gitignore` entries for `venv/`, `__pycache__/`, generated model files, and generated charts.
-10. Add command-line arguments for selecting the dataset, model, and output paths.
+1. Replace manual categorical codes with a persisted preprocessing pipeline so training and prediction use identical category mappings.
+2. Move all configuration into one file or command-line arguments.
+3. Make `main.py` load existing models when available instead of requiring retraining every launch.
+4. Add automated tests for loading, combining, cleaning, splitting, prediction, and evaluation.
+5. Add a real validation strategy and investigate any unusually strong Random Forest results for leakage.
+6. Add `.gitignore` entries for `venv/`, `__pycache__/`, generated model files, and generated charts.
+7. Add command-line arguments for selecting the datasets, model paths, and output paths.
+8. Add clearer input metadata for categorical fields so users do not have to guess encoded values.
 
 ## 15. Quick Reference
+
+For the comprehensive developer and operations walkthrough, open `PROJECT_DEVELOPER_MANUAL.docx`. Regenerate it after changing the project workflow or data contract:
+
+```powershell
+.\venv\Scripts\python.exe .\generate_project_manual.py
+```
+
+For a copyable example session with expected prompts and outputs, see `RUN_EXAMPLE.md`.
 
 From the project directory:
 

@@ -16,6 +16,26 @@ def load_data(filepath):
     return data
 
 
+def load_and_combine(filepath_1, filepath_2):
+    """
+    Reads two customer CSV files and stacks them into one larger DataFrame.
+    Used to combine customer_data.csv and customer_data2.csv into a single,
+    bigger dataset before cleaning and training.
+
+    Note: CustomerID is NOT unique across the combined data (each file
+    numbers its own customers starting from a small number), so CustomerID
+    should never be used to look up a specific real customer after this.
+    It gets dropped anyway during clean_data(), so this doesn't affect training.
+    """
+    data_1 = pd.read_csv(filepath_1)
+    data_2 = pd.read_csv(filepath_2)
+
+    # ignore_index=True renumbers the rows 0, 1, 2... in the combined table,
+    # instead of keeping two separate sets of row numbers that would clash.
+    combined = pd.concat([data_1, data_2], ignore_index=True)
+    return combined
+
+
 def clean_data(data):
     """
     Cleans the raw data so it's usable for machine learning:

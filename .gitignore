@@ -34,3 +34,8 @@ Thumbs.db
 # Logs and temporary files
 *.log
 *.tmp
+
+# ignore files generated
+generate_project_manual.py
+PROJECT_DEVELOPER_MANUAL.docx
+~$OJECT_DEVELOPER_MANUAL.docx
