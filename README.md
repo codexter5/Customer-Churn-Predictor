@@ -110,6 +110,8 @@ Menu options:
 
 Run options in order (1 → 2 → 3/4/5) — options 3 onward depend on data/models loaded earlier in the same run.
 
+When option 2 is selected, the application reports the exact number and percentage of cleaned rows used for training and testing. The current split uses 80% of the rows for training and 20% for testing.
+
 ## Exploratory Data Analysis — Key Findings
 
 Full analysis in `notebooks/eda.ipynb`. Highlights:

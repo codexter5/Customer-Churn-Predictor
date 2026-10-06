@@ -15,14 +15,14 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, confu
 def split_data(data, target_column="Churn"):
     """
     Splits the cleaned data into inputs (X) and the target (y), then
-    into an 80% training portion and a 20% testing portion - so we can
+    into an 70% training portion and a 30% testing portion - so we can
     fairly check the model on data it has never seen before (Phase 8).
     """
     X = data.drop(columns=[target_column])
     y = data[target_column]
 
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+        X, y, test_size=0.3, random_state=42
     )
 
     return X_train, X_test, y_train, y_test
