@@ -5,6 +5,7 @@ The main menu for the Customer Churn Predictor.
 
 import os
 
+import joblib
 import pandas as pd
 
 import data_handler
@@ -18,6 +19,8 @@ DATA_PATH_2 = "data/customer_data2.csv"
 RF_MODEL_PATH = "models/random_forest.joblib"
 LR_MODEL_PATH = "models/logistic_regression.joblib"
 NN_MODEL_PATH = "models/neural_network.pt"
+FEATURE_COLUMNS_PATH = "models/feature_columns.joblib"
+TEST_DATA_PATH = "models/test_data.joblib"
 CHART_PATH = "outputs/feature_importance.png"
 TARGET_COLUMN = "Churn"
 
@@ -27,6 +30,11 @@ rf_model = None
 lr_model = None
 nn_model = None
 nn_scaler = None
+# The exact list of input columns the models were trained on, in order.
+# Needed by predictor.py and visualizer.py even when a user loads saved
+# models without rerunning the full data pipeline (so X_train itself
+# may not exist in memory).
+feature_columns = None
 
 
 def ensure_folders_exist():
@@ -50,22 +58,75 @@ def view_data_summary():
     print(data_handler.get_summary(cleaned_data, target_column=TARGET_COLUMN))
 
 
+def saved_models_exist():
+    """
+    Checks whether every file needed to skip retraining is present:
+    all three models, the feature column list, and the saved test set.
+    All five must exist together - a partial set (e.g. models but no
+    saved test set) is treated as "not available", since evaluation
+    would otherwise silently use a different test set than the one
+    the models were originally scored against.
+    """
+    return (
+        os.path.exists(LR_MODEL_PATH)
+        and os.path.exists(RF_MODEL_PATH)
+        and os.path.exists(NN_MODEL_PATH)
+        and os.path.exists(FEATURE_COLUMNS_PATH)
+        and os.path.exists(TEST_DATA_PATH)
+    )
+
+
+def load_saved_models():
+    """
+    Loads all three models, the feature column list, and the saved
+    test set from disk, without retraining anything. This is what
+    makes menu options 3-5 usable without ever running option 1 or
+    waiting through training again.
+    """
+    global X_test, y_test, rf_model, lr_model, nn_model, nn_scaler, feature_columns
+
+    lr_model = model_trainer.load_model(LR_MODEL_PATH)
+    rf_model = model_trainer.load_model(RF_MODEL_PATH)
+    nn_model, nn_scaler = neural_trainer.load_neural_network(NN_MODEL_PATH)
+    feature_columns = joblib.load(FEATURE_COLUMNS_PATH)
+    X_test, y_test = joblib.load(TEST_DATA_PATH)
+
+    print("Loaded previously saved models - training skipped.")
+
+
 def train_models():
-    global X_train, X_test, y_train, y_test, rf_model, lr_model, nn_model, nn_scaler
+    global X_train, X_test, y_train, y_test, rf_model, lr_model, nn_model, nn_scaler, feature_columns
+
+    if saved_models_exist():
+        answer = input(
+            "\nFound previously saved models. Load them instead of "
+            "retraining? (y/n): "
+        ).strip().lower()
+        if answer == "y":
+            load_saved_models()
+            return
+        print("Retraining from scratch - this will overwrite the saved models.")
+
     if cleaned_data is None:
         print("\nPlease load the data first (Menu option 1).")
         return
+
     X_train, X_test, y_train, y_test = model_trainer.split_data(cleaned_data, target_column=TARGET_COLUMN)
+    feature_columns = X_train.columns.tolist()
+
     print("\nTraining Logistic Regression...")
     lr_model = model_trainer.train_logistic_regression(X_train, y_train)
     print("Training Random Forest...")
     rf_model = model_trainer.train_random_forest(X_train, y_train)
     print("Training Neural Network (shows progress per epoch)...")
     nn_model, nn_scaler = neural_trainer.train_neural_network(X_train, y_train)
+
     ensure_folders_exist()
     model_trainer.save_model(lr_model, LR_MODEL_PATH)
     model_trainer.save_model(rf_model, RF_MODEL_PATH)
     neural_trainer.save_neural_network(nn_model, nn_scaler, NN_MODEL_PATH)
+    joblib.dump(feature_columns, FEATURE_COLUMNS_PATH)
+    joblib.dump((X_test, y_test), TEST_DATA_PATH)
     print("All three models trained and saved successfully.")
 
 
@@ -119,7 +180,7 @@ def predict_new_customer():
         print("\nInvalid choice. Returning to menu.")
         return
 
-    customer_df = predictor.get_customer_input(X_train.columns)
+    customer_df = predictor.get_customer_input(feature_columns)
 
     if model_choice == "1":
         prediction, probability = predictor.predict_churn(lr_model, customer_df)
@@ -141,7 +202,7 @@ def show_chart():
         print("\nPlease train the models first (Menu option 2).")
         return
     ensure_folders_exist()
-    visualizer.plot_feature_importance(rf_model, X_train.columns, CHART_PATH)
+    visualizer.plot_feature_importance(rf_model, feature_columns, CHART_PATH)
 
 
 def show_menu():
@@ -175,5 +236,5 @@ def main():
             print("\nInvalid choice. Please enter a number from 1 to 6.")
 
 
-if name == "main":
+if __name__ == "__main__":
     main()
